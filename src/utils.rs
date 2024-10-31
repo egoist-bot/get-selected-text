@@ -26,11 +26,21 @@ pub(crate) fn copy(enigo: &mut Enigo) {
 
     crate::utils::up_control_keys(enigo);
 
+    #[cfg(target_os = "macos")]
+    enigo.key(Key::Meta, Direction::Press).unwrap();
+    #[cfg(not(target_os = "macos"))]
     enigo.key(Key::Control, Direction::Press).unwrap();
+
     #[cfg(target_os = "windows")]
     enigo.key(Key::C, Direction::Click).unwrap();
     #[cfg(target_os = "linux")]
     enigo.key(Key::Unicode('c'), Direction::Click).unwrap();
+    #[cfg(target_os = "macos")]
+    enigo.key(Key::C, Direction::Click).unwrap();
+
+    #[cfg(target_os = "macos")]
+    enigo.key(Key::Meta, Direction::Release).unwrap();
+    #[cfg(not(target_os = "macos"))]
     enigo.key(Key::Control, Direction::Release).unwrap();
 }
 
