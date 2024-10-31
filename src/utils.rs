@@ -36,7 +36,7 @@ pub(crate) fn copy(enigo: &mut Enigo) {
     #[cfg(target_os = "linux")]
     enigo.key(Key::Unicode('c'), Direction::Click).unwrap();
     #[cfg(target_os = "macos")]
-    enigo.key(Key::C, Direction::Click).unwrap();
+    enigo.key(Key::Unicode('c'), Direction::Click).unwrap();
 
     #[cfg(target_os = "macos")]
     enigo.key(Key::Meta, Direction::Release).unwrap();
