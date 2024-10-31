@@ -1,4 +1,3 @@
-#[cfg(not(target_os = "macos"))]
 mod utils;
 
 #[cfg(target_os = "linux")]

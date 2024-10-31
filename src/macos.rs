@@ -5,6 +5,7 @@ use accessibility_sys_ng::{kAXFocusedUIElementAttribute, kAXSelectedTextAttribut
 use active_win_pos_rs::get_active_window;
 use core_foundation::string::CFString;
 use debug_print::debug_println;
+use enigo::*;
 use lru::LruCache;
 use parking_lot::Mutex;
 
@@ -26,7 +27,7 @@ pub fn get_selected_text() -> Result<String, Box<dyn std::error::Error>> {
         if *text == 0 {
             return get_selected_text_by_ax();
         }
-        return get_selected_text_by_clipboard_using_applescript();
+        return get_selected_text_by_clipboard();
     }
     match get_selected_text_by_ax() {
         Ok(text) => {
@@ -35,7 +36,7 @@ pub fn get_selected_text() -> Result<String, Box<dyn std::error::Error>> {
             }
             Ok(text)
         }
-        Err(_) => match get_selected_text_by_clipboard_using_applescript() {
+        Err(_) => match get_selected_text_by_clipboard() {
             Ok(text) => {
                 if !text.is_empty() {
                     cache.put(app_name, 1);
@@ -48,7 +49,7 @@ pub fn get_selected_text() -> Result<String, Box<dyn std::error::Error>> {
 }
 
 fn get_selected_text_by_ax() -> Result<String, Box<dyn std::error::Error>> {
-    // debug_println!("get_selected_text_by_ax");
+    debug_println!("get_selected_text_by_ax");
     let system_element = AXUIElement::system_wide();
     let Some(selected_element) = system_element
         .attribute(&AXAttribute::new(&CFString::from_static_string(
@@ -79,61 +80,8 @@ fn get_selected_text_by_ax() -> Result<String, Box<dyn std::error::Error>> {
     Ok(selected_text.to_string())
 }
 
-const APPLE_SCRIPT: &str = r#"
-use AppleScript version "2.4"
-use scripting additions
-use framework "Foundation"
-use framework "AppKit"
-
-set savedAlertVolume to alert volume of (get volume settings)
-
--- Back up clipboard contents:
-set savedClipboard to the clipboard
-
-set thePasteboard to current application's NSPasteboard's generalPasteboard()
-set theCount to thePasteboard's changeCount()
-
-tell application "System Events"
-    set volume alert volume 0
-end tell
-
--- Copy selected text to clipboard:
-tell application "System Events" to keystroke "c" using {command down}
-delay 0.1 -- Without this, the clipboard may have stale data.
-
-tell application "System Events"
-    set volume alert volume savedAlertVolume
-end tell
-
-if thePasteboard's changeCount() is theCount then
-    return ""
-end if
-
-set theSelectedText to the clipboard
-
-set the clipboard to savedClipboard
-
-theSelectedText
-"#;
-
-fn get_selected_text_by_clipboard_using_applescript() -> Result<String, Box<dyn std::error::Error>>
-{
-    // debug_println!("get_selected_text_by_clipboard_using_applescript");
-    let output = std::process::Command::new("osascript")
-        .arg("-e")
-        .arg(APPLE_SCRIPT)
-        .output()?;
-    if output.status.success() {
-        let content = String::from_utf8(output.stdout)?;
-        let content = content.trim();
-        Ok(content.to_string())
-    } else {
-        let err = output
-            .stderr
-            .into_iter()
-            .map(|c| c as char)
-            .collect::<String>()
-            .into();
-        Err(err)
-    }
+pub fn get_selected_text_by_clipboard() -> Result<String, Box<dyn std::error::Error>> {
+    debug_println!("get_selected_text_by_clipboard");
+    let mut enigo = Enigo::new(&Settings::default()).unwrap();
+    crate::utils::get_selected_text_by_clipboard(&mut enigo, false)
 }

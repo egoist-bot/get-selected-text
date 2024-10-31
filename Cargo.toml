@@ -10,9 +10,6 @@ description = "A tiny Rust library that allows you to easily obtain selected tex
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[target.'cfg(not(target_os = "macos"))'.dependencies]
-arboard = "3.2.0"
-enigo = { version = "0.2.0", features = [ "xdo" ] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 cocoa = "0.24"
@@ -28,4 +25,5 @@ active-win-pos-rs = "0.8.3"
 debug_print = "1.0.0"
 lru = "0.12.3"
 parking_lot = "0.12.1"
-
+arboard = "3.2.0"
+enigo = { version = "0.2.0", features = [ "xdo" ] }
